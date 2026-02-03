@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+    <meta charset='UTF-8'>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+    <title>ARC Network Swap & Bridge</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+        }
+        .card {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .btn {
+            background-color: #3498db;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .btn:hover {
+            background-color: #2980b9;
+        }
+        input, select {
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+        .result {
+            margin-top: 15px;
+            padding: 10px;
+            background-color: #e8f4fd;
+            border-radius: 5px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class='container'>
+        <h1>🔗 ARC Network Swap & Bridge</h1>
+        
+        <div class='card'>
+            <h2>Swap Tokens</h2>
+            <form id='swapForm'>
+                <label for='fromToken'>From Token:</label>
+                <select id='fromToken' required>
+                    <option value='USDC'>USDC</option>
+                    <option value='ARC'>ARC</option>
+                    <option value='ETH'>ETH</option>
+                </select>
+                
+                <label for='toToken'>To Token:</label>
+                <select id='toToken' required>
+                    <option value='ARC'>ARC</option>
+                    <option value='USDC'>USDC</option>
+                    <option value='ETH'>ETH</option>
+                </select>
+                
+                <label for='amount'>Amount:</label>
+                <input type='number' id='amount' placeholder='Enter amount' step='any' required>
+                
+                <button type='submit' class='btn'>Swap Tokens</button>
+            </form>
+            <div id='swapResult' class='result'></div>
+        </div>
+        
+        <div class='card'>
+            <h2>Bridge Tokens</h2>
+            <form id='bridgeForm'>
+                <label for='bridgeToken'>Token:</label>
+                <select id='bridgeToken' required>
+                    <option value='USDC'>USDC</option>
+                    <option value='ARC'>ARC</option>
+                    <option value='ETH'>ETH</option>
+                </select>
+                
+                <label for='bridgeAmount'>Amount:</label>
+                <input type='number' id='bridgeAmount' placeholder='Enter amount' step='any' required>
+                
+                <label for='destinationNetwork'>Destination Network:</label>
+                <select id='destinationNetwork' required>
+                    <option value='Sepolia'>Ethereum Sepolia</option>
+                    <option value='Base-Sepolia'>Base Sepolia</option>
+                    <option value='Arbitrum-Sepolia'>Arbitrum Sepolia</option>
+                </select>
+                
+                <button type='submit' class='btn'>Bridge Tokens</button>
+            </form>
+            <div id='bridgeResult' class='result'></div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('swapForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = {
+                fromToken: document.getElementById('fromToken').value,
+                toToken: document.getElementById('toToken').value,
+                amount: document.getElementById('amount').value
+            };
+            
+            try {
+                const response = await fetch('/api/swap', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                const result = await response.json();
+                const resultDiv = document.getElementById('swapResult');
+                
+                if (result.success) {
+                    resultDiv.innerHTML = `<strong>Success!</strong> Transaction Hash: ${result.txHash}`;
+                    resultDiv.style.display = 'block';
+                } else {
+                    resultDiv.innerHTML = `<strong>Error:</strong> ${result.error || 'Unknown error'}`;
+                    resultDiv.style.display = 'block';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('swapResult').innerHTML = `<strong>Error:</strong> ${error.message}`;
+                document.getElementById('swapResult').style.display = 'block';
+            }
+        });
+        
+        document.getElementById('bridgeForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = {
+                token: document.getElementById('bridgeToken').value,
+                amount: document.getElementById('bridgeAmount').value,
+                destinationNetwork: document.getElementById('destinationNetwork').value
+            };
+            
+            try {
+                const response = await fetch('/api/bridge', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                const result = await response.json();
+                const resultDiv = document.getElementById('bridgeResult');
+                
+                if (result.success) {
+                    resultDiv.innerHTML = `<strong>Success!</strong> Transaction Hash: ${result.txHash}`;
+                    resultDiv.style.display = 'block';
+                } else {
+                    resultDiv.innerHTML = `<strong>Error:</strong> ${result.error || 'Unknown error'}`;
+                    resultDiv.style.display = 'block';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('bridgeResult').innerHTML = `<strong>Error:</strong> ${error.message}`;
+                document.getElementById('bridgeResult').style.display = 'block';
+            }
+        });
+    </script>
+</body>
+</html>

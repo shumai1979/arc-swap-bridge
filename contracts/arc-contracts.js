@@ -2,17 +2,37 @@
  * @title ARC Network Swap & Bridge Logic
  * @notice ARC Network uses USDC as native gas token, not a separate ARC token
  * @notice This implementation reflects the unique economic model of ARC Network
+ * @notice Updated to include connection to real ARC Testnet
  */
+
+const { ARC_TESTNET_CONFIG } = require('../NETWORK_CONFIG');
 
 class ARCSwapContract {
   constructor(walletAddress) {
     this.walletAddress = walletAddress;
     this.swaps = [];
     this.rates = {
-      'USDC': {'ETH': 0.0006, 'WBTC': 0.00003},  // Taxas hipotéticas
-      'ETH': {'USDC': 1666.67, 'WBTC': 0.5},
-      'WBTC': {'USDC': 50000, 'ETH': 2.0}
+      'USDC': {'ETH': 0.0006, 'WBTC': 0.00003, 'DAI': 1.0, 'UNI': 0.0005},  // Taxas hipotéticas
+      'ETH': {'USDC': 1666.67, 'WBTC': 0.5, 'DAI': 1666.67, 'UNI': 833.33},
+      'WBTC': {'USDC': 50000, 'ETH': 2.0, 'DAI': 50000, 'UNI': 25000},
+      'DAI': {'USDC': 1.0, 'ETH': 0.0006, 'WBTC': 0.00003, 'UNI': 0.0005},
+      'UNI': {'USDC': 2000, 'ETH': 1.2, 'WBTC': 0.0004, 'DAI': 2000}
     };
+    
+    // Informações da rede ARC
+    this.networkInfo = {
+      name: ARC_TESTNET_CONFIG.name,
+      chainId: ARC_TESTNET_CONFIG.chainId,
+      nativeGasToken: ARC_TESTNET_CONFIG.nativeCurrency.symbol,
+      rpcUrls: ARC_TESTNET_CONFIG.rpcUrls
+    };
+  }
+
+  /**
+   * Função para obter informações da rede ARC
+   */
+  getNetworkInfo() {
+    return this.networkInfo;
   }
 
   /**
@@ -23,7 +43,7 @@ class ARCSwapContract {
    * @returns {Object} Resultado da operação
    */
   async swapTokens(fromToken, toToken, amount) {
-    console.log(`Swapping ${amount} ${fromToken} to ${toToken} on ARC network`);
+    console.log(`Swapping ${amount} ${fromToken} to ${toToken} on ${this.networkInfo.name} (Chain ID: ${this.networkInfo.chainId})`);
 
     // Verifica se a taxa existe
     if (!this.rates[fromToken] || !this.rates[fromToken][toToken]) {
@@ -43,7 +63,9 @@ class ARCSwapContract {
       outputAmount,
       user: this.walletAddress,
       timestamp: Date.now(),
-      status: 'completed'
+      status: 'completed',
+      network: this.networkInfo.name,
+      chainId: this.networkInfo.chainId
     };
 
     this.swaps.push(swapOperation);
@@ -53,7 +75,8 @@ class ARCSwapContract {
       txHash: `0x${this.generateId()}`,
       outputAmount,
       rate,
-      operation: swapOperation
+      operation: swapOperation,
+      network: this.networkInfo.name
     };
   }
 
@@ -79,7 +102,22 @@ class ARCBridgeContract {
   constructor(walletAddress) {
     this.walletAddress = walletAddress;
     this.bridges = [];
-    this.supportedNetworks = ['Ethereum-Sepolia', 'Base-Sepolia', 'Arbitrum-Sepolia'];
+    this.supportedNetworks = ['Ethereum-Sepolia', 'Base-Sepolia', 'Arbitrum-Sepolia', 'Polygon-Mumbai'];
+    
+    // Informações da rede ARC
+    this.networkInfo = {
+      name: ARC_TESTNET_CONFIG.name,
+      chainId: ARC_TESTNET_CONFIG.chainId,
+      nativeGasToken: ARC_TESTNET_CONFIG.nativeCurrency.symbol,
+      rpcUrls: ARC_TESTNET_CONFIG.rpcUrls
+    };
+  }
+
+  /**
+   * Função para obter informações da rede ARC
+   */
+  getNetworkInfo() {
+    return this.networkInfo;
   }
 
   /**
@@ -90,7 +128,7 @@ class ARCBridgeContract {
    * @returns {Object} Resultado da operação
    */
   async bridgeTokens(token, amount, destinationNetwork) {
-    console.log(`Bridging ${amount} ${token} to ${destinationNetwork}`);
+    console.log(`Bridging ${amount} ${token} from ${this.networkInfo.name} to ${destinationNetwork}`);
 
     // Verifica se a rede de destino é suportada
     if (!this.supportedNetworks.includes(destinationNetwork)) {
@@ -103,10 +141,12 @@ class ARCBridgeContract {
       token,
       amount,
       destinationNetwork,
+      sourceNetwork: this.networkInfo.name,
       user: this.walletAddress,
       timestamp: Date.now(),
       status: 'processing',  // Na vida real, esta operação levaria tempo
-      estimatedCompletion: Date.now() + 300000  // 5 minutos estimados
+      estimatedCompletion: Date.now() + 300000,  // 5 minutos estimados
+      chainId: this.networkInfo.chainId
     };
 
     this.bridges.push(bridgeOperation);
@@ -118,7 +158,8 @@ class ARCBridgeContract {
       success: true,
       txHash: `0x${this.generateId()}`,
       operation: bridgeOperation,
-      message: `Bridge initiated. Estimated completion in 5 minutes.`
+      message: `Bridge initiated from ${this.networkInfo.name} to ${destinationNetwork}. Estimated completion in 5 minutes.`,
+      network: this.networkInfo.name
     };
   }
 
@@ -135,20 +176,24 @@ class ARCBridgeContract {
   }
 }
 
-// Exportar as classes para uso em outros módulos
+// Exportar as classes e configurações para uso em outros módulos
 module.exports = {
   ARCSwapContract,
-  ARCBridgeContract
+  ARCBridgeContract,
+  ARC_TESTNET_CONFIG
 };
 
 // Se executado diretamente, demonstra o uso
 if (require.main === module) {
   console.log('ARC Network Swap & Bridge Demo');
+  console.log('Network Configuration:', ARC_TESTNET_CONFIG);
   
   // Criar instâncias de teste
   const walletAddr = '0x51D182a04a9F22FDf424Dc854cc6c7bE70259024';
   const swapContract = new ARCSwapContract(walletAddr);
   const bridgeContract = new ARCBridgeContract(walletAddr);
+  
+  console.log('Network Info:', swapContract.getNetworkInfo());
   
   // Demonstração de swap
   swapContract.swapTokens('USDC', 'ETH', 100)

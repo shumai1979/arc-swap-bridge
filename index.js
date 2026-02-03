@@ -1,25 +1,36 @@
 ﻿// ARC Network Swap & Bridge - Main Entry Point
 
-const { ARCSwapContract, ARCBridgeContract } = require('./contracts/arc-contracts');
+const { ARCSwapContract, ARCBridgeContract, ARC_TESTNET_CONFIG } = require('./contracts/arc-contracts');
 
 class ArcNetworkApp {
   constructor(walletAddress) {
     this.walletAddress = walletAddress;
     this.swap = new ARCSwapContract(walletAddress);
     this.bridge = new ARCBridgeContract(walletAddress);
+    
+    // Informações da rede
+    this.networkInfo = {
+      name: ARC_TESTNET_CONFIG.name,
+      chainId: ARC_TESTNET_CONFIG.chainId,
+      nativeGasToken: ARC_TESTNET_CONFIG.nativeCurrency.symbol,
+      rpcUrls: ARC_TESTNET_CONFIG.rpcUrls
+    };
   }
 
   async initialize() {
     console.log('Initializing ARC Network Swap & Bridge application...');
+    console.log('Network:', this.networkInfo.name);
+    console.log('Chain ID:', this.networkInfo.chainId);
+    console.log('Native Gas Token:', this.networkInfo.nativeGasToken);
     console.log('Wallet:', this.walletAddress);
     
-    // Simular conexão à rede ARC
+    // Conectar à rede ARC
     await this.connectToArcNetwork();
     console.log('Connected to ARC Network');
   }
 
   async connectToArcNetwork() {
-    // Simular conexão
+    // Simular conexão à rede ARC
     return new Promise(resolve => setTimeout(resolve, 1000));
   }
 
@@ -42,6 +53,11 @@ class ArcNetworkApp {
   getSupportedNetworks() {
     return this.bridge.getSupportedNetworks();
   }
+
+  // Obter informações da rede
+  getNetworkInfo() {
+    return this.networkInfo;
+  }
 }
 
 // Exportar a classe principal
@@ -55,10 +71,11 @@ if (require.main === module) {
   app.initialize()
     .then(() => {
       console.log('ARC Network App initialized successfully');
+      console.log('Network Info:', app.getNetworkInfo());
       
       // Demonstração rápida
       console.log('\n--- Demonstração ---');
-      console.log('Taxa USDC->ARC:', app.getSwapRate('USDC', 'ARC'));
+      console.log('Taxa USDC->ETH:', app.getSwapRate('USDC', 'ETH'));
       console.log('Redes suportadas para bridge:', app.getSupportedNetworks());
     })
     .catch(console.error);

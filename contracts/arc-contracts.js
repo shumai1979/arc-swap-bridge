@@ -2,7 +2,7 @@
  * @title ARC Network Swap & Bridge Logic
  * @notice ARC Network uses USDC as native gas token, not a separate ARC token
  * @notice This implementation reflects the unique economic model of ARC Network
- * @notice Updated to include connection to real ARC Testnet
+ * @notice Updated to include connection to real ARC Testnet with official USDC address
  */
 
 const { ARC_TESTNET_CONFIG } = require('../NETWORK_CONFIG');
@@ -24,7 +24,8 @@ class ARCSwapContract {
       name: ARC_TESTNET_CONFIG.name,
       chainId: ARC_TESTNET_CONFIG.chainId,
       nativeGasToken: ARC_TESTNET_CONFIG.nativeCurrency.symbol,
-      rpcUrls: ARC_TESTNET_CONFIG.rpcUrls
+      rpcUrls: ARC_TESTNET_CONFIG.rpcUrls,
+      usdcContractAddress: ARC_TESTNET_CONFIG.usdcContractAddress  // Endereço oficial
     };
   }
 
@@ -109,7 +110,8 @@ class ARCBridgeContract {
       name: ARC_TESTNET_CONFIG.name,
       chainId: ARC_TESTNET_CONFIG.chainId,
       nativeGasToken: ARC_TESTNET_CONFIG.nativeCurrency.symbol,
-      rpcUrls: ARC_TESTNET_CONFIG.rpcUrls
+      rpcUrls: ARC_TESTNET_CONFIG.rpcUrls,
+      usdcContractAddress: ARC_TESTNET_CONFIG.usdcContractAddress  // Endereço oficial
     };
   }
 

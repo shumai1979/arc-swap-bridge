@@ -1,6 +1,7 @@
 /**
  * @title ARC Network Swap & Bridge Logic
- * @notice Simplified implementation for ARC Network
+ * @notice ARC Network uses USDC as native gas token, not a separate ARC token
+ * @notice This implementation reflects the unique economic model of ARC Network
  */
 
 class ARCSwapContract {
@@ -8,9 +9,9 @@ class ARCSwapContract {
     this.walletAddress = walletAddress;
     this.swaps = [];
     this.rates = {
-      'USDC': {'ARC': 1.0, 'ETH': 0.0006},  // Taxas hipotéticas
-      'ARC': {'USDC': 1.0, 'ETH': 0.0006},
-      'ETH': {'USDC': 1666.67, 'ARC': 1666.67}
+      'USDC': {'ETH': 0.0006, 'WBTC': 0.00003},  // Taxas hipotéticas
+      'ETH': {'USDC': 1666.67, 'WBTC': 0.5},
+      'WBTC': {'USDC': 50000, 'ETH': 2.0}
     };
   }
 
@@ -150,7 +151,7 @@ if (require.main === module) {
   const bridgeContract = new ARCBridgeContract(walletAddr);
   
   // Demonstração de swap
-  swapContract.swapTokens('USDC', 'ARC', 100)
+  swapContract.swapTokens('USDC', 'ETH', 100)
     .then(result => {
       console.log('Swap result:', result);
     });

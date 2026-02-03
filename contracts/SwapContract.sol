@@ -4,6 +4,7 @@ pragma solidity ^0.8.0;
 /**
  * @title Simple Swap Contract
  * @dev A basic contract for swapping tokens on ARC network
+ * @notice ARC Network uses USDC as native gas token, not a separate ARC token
  */
 contract SwapContract {
     // Event emitted when a swap occurs
